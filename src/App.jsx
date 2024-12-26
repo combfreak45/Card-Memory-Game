@@ -1,111 +1,118 @@
-import { useEffect } from "react";
-import { useState } from "react";
-
-
-
+import React, { useState } from "react";
 
 function App() {
-  const [card1, setCard1] = useState(true);
-  const [card2, setCard2] = useState(true);
-  const [card3, setCard3] = useState(true);
-  const [card4, setCard4] = useState(true);
 
+  const [cards, setCards] = useState([
+    { id: 1, value: "A", isFlipped: false, isMatched: false },
+    { id: 2, value: "B", isFlipped: false, isMatched: false },
+    { id: 3, value: "A", isFlipped: false, isMatched: false },
+    { id: 4, value: "B", isFlipped: false, isMatched: false },
+  ]);
 
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [isGameComplete, setIsGameComplete] = useState(false);
+  const [time, setTime] = useState(60);
 
+  const timer = () => {
 
-  const changeCard1 = () => {
-    console.log("change1");
-    setCard1(!card1);
+    if (time > 0) {
+      const interval = setInterval(() => {
+        setTime((prevTime) => {
+          if (prevTime <= 1 || isGameComplete) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    }
+
   };
 
-  const changeCard2 = () => {
-    console.log("change2");
-    setCard2(!card2);
-  };
-
-   const changeCard3 = () => {
-    console.log("change3");
-    setCard3(!card3);
-  };
-
-   const changeCard4 = () => {
-    console.log("change4");
-    setCard4(!card4);
-  };
   
+  const handleCardClick = (index) => {
+    if (
+      cards[index].isFlipped ||
+      cards[index].isMatched ||
+      selectedCards.length === 2
+    ) {
+      return;
+    }
+
+    const updatedCards = [...cards];
+    updatedCards[index].isFlipped = true;
+
+    setCards(updatedCards);
+
+    
+    const newSelectedCards = [...selectedCards, index];
+    setSelectedCards(newSelectedCards);
+
+    if (newSelectedCards.length === 2) {
+
+      const [firstIndex, secondIndex] = newSelectedCards;
+
+      if (cards[firstIndex].value === cards[secondIndex].value) {
+
+        setTimeout(() => {
+
+          const matchedCards = [...updatedCards];
+          matchedCards[firstIndex].isMatched = true;
+          matchedCards[secondIndex].isMatched = true;
+          setCards(matchedCards);
+          setSelectedCards([]);
+
+          const allMatched = matchedCards.every((card) => card.isMatched);
+
+          if (allMatched) {
+            setIsGameComplete(true);
+          }
+
+        }, 500);
+
+      } else {
+        
+        setTimeout(() => {
+
+          const flippedBackCards = [...updatedCards];
+          flippedBackCards[firstIndex].isFlipped = false;
+          flippedBackCards[secondIndex].isFlipped = false;
+          setCards(flippedBackCards);
+          setSelectedCards([]);
+
+        }, 500);
+
+      }
+    }
+  };
+
   return (
     <div className="m-10">
-      <div className="text-xl m-10">Car memory game</div>
+      <div className="text-xl mb-5">Card Memory Game</div>
+      <div>{Math.floor(time/60)}:{time=== 60 ? "00" : time}</div>
+      <button className="mb-2 bg-green-500 p-2 rounded-lg" onClick={timer}>Start</button>
       <div className="flex flex-row gap-10">
-        <div>
-          {card1 ? (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard1}
-            >
-              Click
-            </div>
-          ) : (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard1}
-            >
-              Card1
-            </div>
-          )}
-        </div>
-        <div>
-          {card2 ? (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard2}
-            >
-              Click
-            </div>
-          ) : (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard2}
-            >
-              Card2
-            </div>
-          )}
-        </div>
-        <div>
-          {card3 ? (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard3}
-            >
-              Click
-            </div>
-          ) : (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard3}
-            >
-              Card3
-            </div>
-          )}
-        </div>
-        <div>
-          {card4 ? (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard4}
-            >
-              Click
-            </div>
-          ) : (
-            <div
-              className="h-[200px] w-[100px] bg-black text-white p-10"
-              onClick={changeCard4}
-            >
-              Card4
-            </div>
-          )}
-        </div>
+
+        {cards.map((card, index) => (
+          <div
+            key={card.id}
+            className={`h-[200px] w-[150px] rounded-xl ${
+              card.isFlipped || card.isMatched ? "bg-green-500" : "bg-black"
+            } text-white p-10 flex justify-center items-center`}
+            onClick={() => handleCardClick(index)}
+          >
+            {card.isFlipped || card.isMatched ? card.value : "Click"}
+          </div>
+        ))}
+
       </div>
+
+      {isGameComplete && (
+        <div>
+        <div className="text-2xl m-10 text-green-700">You Won!</div>
+        <div>{time}</div>
+        </div>
+      )}
     </div>
   );
 }
