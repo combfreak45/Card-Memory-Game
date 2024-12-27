@@ -106,10 +106,9 @@ function App() {
         ))}
       </div>
       {isGameComplete && (
-        <>
-          <div className="text-2xl m-10 text-green-700">🎉 You Won! 🎉</div>
-          <div>{time}</div>
-        </>
+          <div className="text-xl mt-10 text-green-700">
+            🎉 You Won! You took {60 - time} seconds 🎉
+          </div>
       )}
     </div>
   );
